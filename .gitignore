@@ -1,0 +1,7 @@
+# Nginx Proxy Manager のデータを除外
+nginx-proxy-manager-data/
+nginx-proxy-manager-ssl/
+
+# ただし、ディレクトリ構造は保持
+!nginx-proxy-manager-data/.gitkeep
+!nginx-proxy-manager-ssl/.gitkeep
