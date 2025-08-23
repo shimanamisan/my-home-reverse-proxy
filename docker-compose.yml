@@ -1,27 +1,32 @@
+# Nginx Proxy Manager の Docker Compose 設定ファイル
+# リバースプロキシ、ロードバランサー、SSL証明書管理を提供するWebアプリケーション
+
+# データ永続化のためのボリューム定義
 volumes:
   npm_data:
-    name: nginx-proxy-manager-data
+    name: nginx-proxy-manager-data    # アプリケーションデータ（設定、データベース等）を保存
   npm_ssl_certificates:
-    name: nginx-proxy-manager-ssl
+    name: nginx-proxy-manager-ssl     # SSL証明書とキーファイルを保存
     
+# 外部ネットワークの定義
 networks:
   nginx-proxy-manager-network:
-    external: true
+    external: true                     # 既存の外部ネットワークを使用
 
+# サービス定義
 services:
   nginx-proxy-manager:
-    image: 'jc21/nginx-proxy-manager:latest'
-    container_name: nginx-proxy-manager-prod
-    restart: unless-stopped
+    image: 'jc21/nginx-proxy-manager:latest'    # 公式のNginx Proxy Managerイメージ
+    container_name: nginx-proxy-manager-prod    # コンテナ名
+    restart: unless-stopped                     # 停止時以外は自動再起動
     ports:
-      - '80:80'   # Public HTTP Port
-      - '443:443' # Public HTTPS Port
-      - '81:81'   # Admin Web Port
+      - '80:80'   # 公開HTTPポート - 外部からのHTTPリクエストを受信
+      - '443:443' # 公開HTTPSポート - 外部からのHTTPSリクエストを受信
+      - '81:81'   # 管理Webポート - 管理画面へのアクセス用
     environment:
-      DISABLE_IPV6: 'true'
+      DISABLE_IPV6: 'true'                          # IPv6を無効化（IPv4のみ使用）
     volumes:
-      # より分かりやすいディレクトリ名
-      - ./nginx-proxy-manager-data:/data
-      - ./nginx-proxy-manager-ssl:/etc/letsencrypt
+      - ./nginx-proxy-manager-data:/data            # アプリケーションデータをホストにマウント
+      - ./nginx-proxy-manager-ssl:/etc/letsencrypt  # SSL証明書をホストにマウント
     networks:
-      - nginx-proxy-manager-network
+      - nginx-proxy-manager-network             # 指定されたネットワークに接続
