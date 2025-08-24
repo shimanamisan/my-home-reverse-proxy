@@ -1,7 +1,15 @@
-# Nginx Proxy Manager のデータを除外
 nginx-proxy-manager-data/*
 nginx-proxy-manager-ssl/*
+portainer-data/*
 
+# データを除外
 # ただし、ディレクトリ構造は保持
 !nginx-proxy-manager-data/.gitkeep
 !nginx-proxy-manager-ssl/.gitkeep
+!portainer-data/.gitkeep
+
+# 環境変数ファイルを除外
+.env
+.env.local
+.env.production
+.env.staging

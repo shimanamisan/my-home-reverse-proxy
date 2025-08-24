@@ -1,7 +1,3 @@
-# Nginx Proxy Manager の Docker Compose 設定ファイル
-# リバースプロキシ、ロードバランサー、SSL証明書管理を提供するWebアプリケーション
-
-# データ永続化のためのボリューム定義
 volumes:
   npm_data:
     name: nginx-proxy-manager-data    # アプリケーションデータ（設定、データベース等）を保存
@@ -11,22 +7,39 @@ volumes:
 # 外部ネットワークの定義
 networks:
   nginx-proxy-manager-network:
-    external: true                     # 既存の外部ネットワークを使用
+    external: true                    # 既存の外部ネットワークを使用
 
 # サービス定義
 services:
+
+  portainer:
+    image: portainer/portainer
+    privileged: true
+    volumes:
+      - './portainer-data:/data'
+      - '/var/run/docker.sock:/var/run/docker.sock'
+    restart: unless-stopped
+    networks:
+      - nginx-proxy-manager-network    
+
   nginx-proxy-manager:
-    image: 'jc21/nginx-proxy-manager:latest'    # 公式のNginx Proxy Managerイメージ
-    container_name: nginx-proxy-manager-prod    # コンテナ名
-    restart: unless-stopped                     # 停止時以外は自動再起動
+    image: 'jc21/nginx-proxy-manager:latest'        # 公式のNginx Proxy Managerイメージ
+    container_name: nginx-proxy-manager-prod        # コンテナ名
+    restart: unless-stopped                         # 停止時以外は自動再起動
     ports:
-      - '80:80'   # 公開HTTPポート - 外部からのHTTPリクエストを受信
-      - '443:443' # 公開HTTPSポート - 外部からのHTTPSリクエストを受信
-      - '81:81'   # 管理Webポート - 管理画面へのアクセス用
+      - '80:80'                                     # 公開HTTPポート - 外部からのHTTPリクエストを受信
+      - '443:443'                                   # 公開HTTPSポート - 外部からのHTTPSリクエストを受信
+      - '${ADMIN_PORT:-81}:81'                      # 管理Webポート - 管理画面へのアクセス用
+    env_file:
+      - .env                                        # 環境変数ファイルの読み込み
     environment:
       DISABLE_IPV6: 'true'                          # IPv6を無効化（IPv4のみ使用）
     volumes:
       - ./nginx-proxy-manager-data:/data            # アプリケーションデータをホストにマウント
       - ./nginx-proxy-manager-ssl:/etc/letsencrypt  # SSL証明書をホストにマウント
     networks:
-      - nginx-proxy-manager-network             # 指定されたネットワークに接続
+      - nginx-proxy-manager-network                 # 指定されたネットワークに接続
+    healthcheck:
+      test: ["CMD", "/usr/bin/check-health"]
+      interval: 10s
+      timeout: 3s
