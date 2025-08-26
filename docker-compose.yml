@@ -18,6 +18,8 @@ services:
     volumes:
       - './portainer-data:/data'
       - '/var/run/docker.sock:/var/run/docker.sock'
+    environment:
+      - TZ=Asia/Tokyo
     restart: unless-stopped
     networks:
       - nginx-proxy-manager-network    
@@ -33,7 +35,8 @@ services:
     env_file:
       - .env                                        # 環境変数ファイルの読み込み
     environment:
-      DISABLE_IPV6: 'true'                          # IPv6を無効化（IPv4のみ使用）
+      - DISABLE_IPV6=true                          # IPv6を無効化（IPv4のみ使用）
+      - TZ=Asia/Tokyo
     volumes:
       - ./nginx-proxy-manager-data:/data            # アプリケーションデータをホストにマウント
       - ./nginx-proxy-manager-ssl:/etc/letsencrypt  # SSL証明書をホストにマウント
