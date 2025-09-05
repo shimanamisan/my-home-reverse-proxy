@@ -1,33 +1,38 @@
 volumes:
   npm_data:
-    name: nginx-proxy-manager-data    # アプリケーションデータ（設定、データベース等）を保存
+    # アプリケーションデータ（設定、データベース等）を保存
+    name: nginx-proxy-manager-data
   npm_ssl_certificates:
-    name: nginx-proxy-manager-ssl     # SSL証明書とキーファイルを保存
+    # SSL証明書とキーファイルを保存
+    name: nginx-proxy-manager-ssl
     
 # 外部ネットワークの定義
 networks:
   nginx-proxy-manager-network:
-    external: true                    # 既存の外部ネットワークを使用
+    # 既存の外部ネットワークを使用
+    external: true
 
 # サービス定義
 services:
 
   portainer:
-    image: portainer/portainer
-    privileged: true
+    image: portainer/portainer-ce:lts                  # Long Term Support版
+    container_name: portainer-ce-prod                  # コンテナ名
+    security_opt:
+      - no-new-privileges:true                         # 新しい権限の取得を禁止
     volumes:
-      - './portainer-data:/data'
-      - '/var/run/docker.sock:/var/run/docker.sock'
+      - './portainer-data:/data'                       # データをホストにマウント
+      - '/var/run/docker.sock:/var/run/docker.sock:ro' # 読み取り専用でマウント
     environment:
       - TZ=Asia/Tokyo
-    restart: unless-stopped
+    expose:
+      - "9000"                                          # 内部ポートのみ公開（Nginx経由でのアクセス想定）
     networks:
       - nginx-proxy-manager-network    
 
   nginx-proxy-manager:
-    image: 'jc21/nginx-proxy-manager:latest'        # 公式のNginx Proxy Managerイメージ
+    image: 'jc21/nginx-proxy-manager:2.12.6'        # 公式のNginx Proxy Managerイメージ
     container_name: nginx-proxy-manager-prod        # コンテナ名
-    restart: unless-stopped                         # 停止時以外は自動再起動
     ports:
       - '80:80'                                     # 公開HTTPポート - 外部からのHTTPリクエストを受信
       - '443:443'                                   # 公開HTTPSポート - 外部からのHTTPSリクエストを受信
@@ -35,7 +40,7 @@ services:
     env_file:
       - .env                                        # 環境変数ファイルの読み込み
     environment:
-      - DISABLE_IPV6=true                          # IPv6を無効化（IPv4のみ使用）
+      - DISABLE_IPV6=true                           # IPv6を無効化（IPv4のみ使用）
       - TZ=Asia/Tokyo
     volumes:
       - ./nginx-proxy-manager-data:/data            # アプリケーションデータをホストにマウント
