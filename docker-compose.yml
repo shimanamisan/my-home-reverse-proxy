@@ -39,7 +39,3 @@ services:
       - ./nginx-proxy-manager-ssl:/etc/letsencrypt  # SSL証明書をホストにマウント
     networks:
       - nginx-proxy-manager-network                 # 指定されたネットワークに接続
-    healthcheck:
-      test: ["CMD", "/usr/bin/check-health"]
-      interval: 10s
-      timeout: 3s
